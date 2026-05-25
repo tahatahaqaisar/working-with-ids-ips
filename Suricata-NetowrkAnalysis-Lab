@@ -1,0 +1,80 @@
+Suricata and Traffic Analysis Lab
+
+This document outlines the steps to perform log filtering, Suricata configuration updates for HTTP logging, and rule analysis for exploit detection.
+1. Filtering HTTP Events with jq
+
+Task: Extract HTTP-specific events from a legacy Suricata JSON log file and identify the flow_id.
+
+To filter the JSON logs and find the unique flow_id associated with HTTP traffic, use the following command:
+Bash
+
+cat /var/log/suricata/old_eve.json | jq 'select(.event_type=="http") | .flow_id'
+
+    Command Breakdown:
+
+        jq: A command-line JSON processor.
+
+        select(.event_type=="http"): Filters the log entries to only show those categorized as HTTP.
+
+        .flow_id: Extracts the specific flow identification number.
+
+2. Enabling HTTP Logging and Analyzing PCAPs
+
+Task: Modify the Suricata configuration to log HTTP traffic and analyze a specific PCAP to find a requested PHP page.
+Step A: Enable http-log in suricata.yaml
+
+    Open the configuration file: sudo nano /etc/suricata/suricata.yaml
+
+    Locate the outputs section and ensure the http-log is enabled:
+
+YAML
+
+outputs:
+  - http-log:
+      enabled: yes
+      filename: http.log
+      append: yes
+
+Step B: Run Suricata against the PCAP
+
+Execute Suricata in read-pcap mode:
+Bash
+
+sudo suricata -r /home/htb-student/pcaps/suspicious.pcap -v
+
+Step C: Identify the PHP Page
+
+Check the generated http.log for URI requests:
+Bash
+
+grep ".php" /var/log/suricata/http.log
+
+3. Exploit Rule Analysis (MS17-010 / EternalBlue)
+
+Task: Analyze a specific Snort/Suricata rule (SID: 2024217) associated with the MS17-010 EternalBlue exploit to determine its minimum offset.
+Rule Snippet Analysis
+
+The following terminal output shows the rule extracted from the local.rules file:
+
+(Note: Upload your screenshot to GitHub or an image host like Imgur and replace the link above)
+Technical Breakdown:
+
+    Target: This rule monitors for Heap Spraying, a technique used to prepare the target's memory for the EternalBlue exploit.
+
+    PCRE Logic: The regular expression /^[a-zA-Z0-9+/]{1000,}/R searches for large chunks of Base64 encoded data (1,000+ characters).
+
+    Thresholding: To prevent alert fatigue, it triggers only if 3 instances occur within 30 seconds from the same source IP.
+
+    The Minimum Offset: When searching for the SMB header (|ff|SMB|) within the TCP payload, the minimum offset is 4.
+
+Why an offset of 4?
+In SMB over TCP, the first 4 bytes are reserved for the NetBIOS Session Service (Message Type and Length). The actual SMB protocol data starts at the 5th byte (Index 4).
+
+Final Answer: 4
+Resources
+
+    Tool: Suricata IDS/IPS
+
+    Format: jq Manual
+
+    Exploit Reference: MS17-010 Bulletin
