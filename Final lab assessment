@@ -1,0 +1,86 @@
+#Analysis of WannaMine (Overpass-the-Hash) via Kerberos Downgrade
+##Overview:
+
+This exercise involves detecting a Kerberos encryption type downgrade, a common indicator of the Overpass-the-Hash technique used by the WannaMine cryptojacking worm. The goal is to configure a Snort/Suricata rule that triggers when a weak encryption type is requested.
+Prerequisites
+
+    Environment: Linux (HTB Student Lab)
+
+    Tools: Snort , grep, nano
+
+    PCAP Source: /home/htb-student/pcaps/wannamine.pcap
+
+    Rule File: /etc/snort/rules/local.rules (or equivalent)
+
+###Technical Context
+
+When an attacker performs Overpass-the-Hash, they often force the Kerberos authentication process to use RC4-HMAC (Type 23) instead of more secure types like AES-256. This is because the RC4-HMAC subkey is derived directly from the user's NT hash.
+Rule Configuration
+
+To trigger an alert on this traffic, the local.rules file must contain a rule targeting the Kerberos etype field.
+
+###The Rule:
+Code snippet
+
+alert tcp any any -> any 88 (msg:"Kerberos Encryption Type Downgrade (RC4-HMAC)"; content:"|a1|"; depth:40; content:"|02 01 17|"; distance:0; sid:1000001; rev:1;)
+
+Note: 17 in hex represents the decimal value 23.
+Execution & Verification
+
+Run the engine against the PCAP to verify the rule triggers:
+Bash
+
+snort -r /home/htb-student/pcaps/wannamine.pcap -c /etc/snort/rules/local.rules
+
+###Conclusion
+The answer of the given question is 17. If we enter this value at XX this will create an alert.
+
+
+#Analysis of Neutrino Gootkit Traffic via Zeek
+##Overview
+
+This document details the process of analyzing network traffic associated with the Neutrino Exploit Kit and Gootkit malware. By processing the packet capture with Zeek, we extract certificate metadata to identify specific network signatures and indicators of compromise (IoCs).
+Prerequisites
+
+    Environment: Linux / Parrot OS (HTB Student Lab)
+
+    Tools: Zeek, grep, standard Linux command-line utilities
+
+    Data Source: /home/htb-student/pcaps/neutrinogootkit.pcap
+
+##Execution Steps
+1. Generate Network Logs
+
+Run Zeek against the targeted PCAP file using the /usr/local/zeek/bin/zeek binary. The -C flag is utilized to ignore checksum errors common in malicious or altered packet captures:
+Bash
+
+sudo /usr/local/zeek/bin/zeek -C -r /home/htb-student/pcaps/neutrinogootkit.pcap
+
+2. Search for the Certificate Trace
+
+Zeek automatically extracts X.509 certificate metadata into a structured log file named x509.log. Use grep to filter this log file for the specific organizational signature "MyCompany Ltd.":
+Bash
+
+cat x509.log | grep "MyCompany Ltd."
+
+3. Lab Evidence & Terminal Output
+
+The complete execution flow, including password entry, error handling for typos, execution parameters, and the raw Tab-Separated Values (TSV) string output, is captured below:
+
+Figure 1: Terminal output from Screenshot_2026-06-01_07_57_04.jpg showing the raw string extraction from x509.log.
+Log Field Mapping
+
+Based on Zeek's tab-separated default schema, the extracted row maps directly to the following internal header values:
+Field Name	Logged Value (From Evidence)
+ts	1467993481.526112
+id	1d43976111c0431412f082a311fcc0a42127553a1d3d570a41191ad6678a0207
+certificate.version	1
+certificate.serial	8DA0C3CDC8F770AA
+certificate.subject	CN=localhost,OU=IT,O=MyCompany Ltd.,L=York,ST=Yorks,C=GB
+certificate.issuer	CN=localhost,OU=IT,O=MyCompany Ltd.,L=York,ST=Yorks,C=GB
+##Conclusion
+
+The Gootkit threat actors utilized a self-signed certificate featuring dummy operational data. While both the issuer and subject fields match identically due to the self-signed nature of the root, the primary field tracking the certificate identity in the Zeek network log is certificate.subject.
+Answer Key
+
+Target Field Name: certificate.subject
