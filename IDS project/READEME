@@ -1,0 +1,45 @@
+# Home IDS lab
+
+## Overview
+Built a Home SOC Lab using:
+- Windows victim machine
+- Linux server running Suricata
+- Linux server running Splunk
+
+## Architecture
+Laptop A (
+│
+├── Splunk Enterprise
+├── Splunk MLTK
+├── Python AI Triage
+└── Splunk Web UI
+
+Laptop B
+VM 1: Kali Linux
+├── Suricata IDS/IPS
+└── Splunk Universal Forwarder
+
+VM 2: Windows 10/11
+├── Victim Machine
+└── Sysmon
+
+## Tools Used
+- Suricata
+- Splunk
+- Sysmon
+
+## Challenges
+The major challenge i faced was sending sysmon logs to the splunk. Splunk universal forwader and splunk reciver were working fine.
+But still i was not reciving logs.The issue that i identified was that the inputs file was not confiured correcly.
+
+## Screenshots
+
+
+## Key Learnings
+Gained hands-on experience in building a basic SOC (Security Operations Center) environment using real security tools and virtual machines.
+Understood how network traffic monitoring and intrusion detection works using Suricata in IDS/IPS mode.
+Learned how a SIEM system (Splunk) collects, indexes, and analyzes security logs for threat detection.
+Improved understanding of endpoint telemetry and Windows event logging using Sysmon.
+Faced and resolved challenges in log forwarding from Windows to Splunk, improving troubleshooting skills in agent configuration and data ingestion.
+Learned how different security components (endpoint, network, SIEM) work together in a centralized security monitoring workflow.
+Developed practical skills in log analysis, alert investigation, and security event correlation.
