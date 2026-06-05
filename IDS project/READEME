@@ -33,7 +33,10 @@ The major challenge i faced was sending sysmon logs to the splunk. Splunk univer
 But still i was not reciving logs.The issue that i identified was that the inputs file was not confiured correcly.
 
 ## Screenshots
-
+###Splunk Dashboard
+[![Splunk Dashboard](Splunk_Dashboard.png)](Splunk_Dashboard2.png)
+###Suricata Alert
+![Suricata Alert](/ssuricata_alerts.png)
 
 ## Key Learnings
 Gained hands-on experience in building a basic SOC (Security Operations Center) environment using real security tools and virtual machines.
